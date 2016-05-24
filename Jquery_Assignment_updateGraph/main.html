@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- View port for Responsive web pages -->
+    <style>
+    .axis text {
+  ​
+    font-weight: bold;
+    font-size: 15px;
+    font-style: monospace;
+  }
+  ​
+  .axis path,
+  .axis line {
+    fill: black;
+    stroke: #000;
+    shape-rendering: crispEdges;
+  }
+    </style>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>FoodFacts</title>
+    <!-- Linking the Style sheet -->
+    <link href="bootstrap.min.css" rel="stylesheet">
+    <!-- <link href="css/style.css" rel="stylesheet"> -->
+
+  </head>
+  <body>
+    <!-- Linking the JQuery File -->
+<script src="jquery-2.2.4.js"></script>
+    <div class="container">
+      <div class="row">
+        <center><h1>Graph for Sugar and Salt consuption</h1><center>
+      </div>
+    </div>
+    <hr />
+    <br />
+    <!-- For Creating the table -->
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-6">
+                <table class="table" id="tb1">
+                    <thead>
+                        <tr>
+                            <th>
+                                S.No
+                            </th>
+                            <th>
+                                Country
+                            </th>
+                            <th>
+                                sugars_100g
+                            </th>
+                            <th>
+                              salt_100g
+                            </th>
+                            <th>
+                              Total
+                            </th>
+                        </tr>
+                    </thead>
+              <tbody>
+              </tbody>
+            </table>
+            <script>
+                var i=1;
+                var myObj=[
+                  {
+                    "countries": "Netherland",
+                    "sugars_100g": 412.42999999999995,
+                    "salt_100g": 29.59174
+                  },
+                  {
+                    "countries": "Canada",
+                    "sugars_100g": 743.2200000000001,
+                    "salt_100g": 28.721923999999998
+                  },
+                  {
+                    "countries": "UK/USA",
+                    "sugars_100g": 7045.429999999992,
+                    "salt_100g": 526.3100055999998
+                  },
+                  {
+                    "countries": "Australia",
+                    "sugars_100g": 2349.6000000000004,
+                    "salt_100g": 192.5214260000001
+                  },
+                  {
+                    "countries": "France",
+                    "sugars_100g": 1964.4400000000005,
+                    "salt_100g": 138.41300699999996
+                  },
+                  {
+                    "countries": "Germany",
+                    "sugars_100g": 2091.960000000001,
+                    "salt_100g": 153.8443184
+                  },
+                  {
+                    "countries": "Spain",
+                    "sugars_100g": 131.15999999999997,
+                    "salt_100g": 18.440787
+                  }
+                ];
+                for (var i = 0; i < myObj.length; i++)
+                {
+                    drawRow(myObj[i]);
+                }
+                // For Drawing the Graph
+                $(document).ready(function()
+                {
+                    drawGraph(myObj);
+                });
+                // For Drawing the Table
+                function drawRow(rowData)
+                {
+                    var row = $("<tr />")
+                    $("#tb1").append(row); //Appending each row
+                    row.append($("<td id='sno'>" + (i+1) + "</td>"));
+                    row.append($("<td>" + rowData.countries + "</td>"));
+                    row.append($("<td>" + parseInt(rowData.sugars_100g) + "</td>"));
+                    row.append($("<td>" + parseInt(rowData.salt_100g) + "</td>"));
+                    var total = rowData.sugars_100g + rowData.salt_100g;
+                      row.append($("<td>" + parseInt(total) + "</td>"));
+
+                  //  row.append($("<td><a class='removebutton'><img src='images/delete_button.png' /></a></td>"));
+                  row.append($("<td><a class='removebutton'> Delete </a> </td>"));
+                }
+                $(document).on('click', 'a.removebutton', function ()
+                {
+                    var deleteButton=confirm("Are you sure to delete?");
+                    if(deleteButton==true)
+                    {
+                        var dis=$(this).closest('tr').children('td#sno').text();
+                        myObj[parseInt(dis)-1]="";
+                        drawGraph(myObj);
+                        $(this).closest('tr').remove();
+                        return false;
+                    }
+                });
+            </script>
+          </div>
+          <!-- For Drawing the Graph -->
+              <div class="col-sm-6" id="second">
+            <!-- Including the D3.js -->
+            <script src="http://d3js.org/d3.v3.min.js"></script>
+            <script>
+              // set the dimensions of SVG
+              function drawGraph(myObj)
+              {
+                console.log(myObj);
+                    // Emptying the Div each time
+                    $('div#second').empty();
+                    // Setting the margin for SVG
+                    var margin = {top: 20, right: 20, bottom: 70, left: 80};
+                    var width = 500 - margin.left - margin.right;
+                    var height = 500 - margin.top - margin.bottom;
+                    // set the ranges of X and Y Axis
+                    var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
+                    var y = d3.scale.linear().range([height, 0]);
+                    // Define the axis
+                    var xAxis = d3.svg.axis()
+                          .scale(x)
+                          .orient("bottom")
+                    var yAxis = d3.svg.axis()
+                          .scale(y)
+                          .orient("left");
+                    // Add the SVG element
+                    var svg = d3.select("div#second").append("svg")
+                        .attr("width", width + margin.left + margin.right)
+                        .attr("height", height + margin.top + margin.bottom)
+                        .append("g")
+                        .attr("transform",
+                              "translate(" + margin.left + "," + margin.top + ")");
+                    // Reading the myObj Data
+                    myObj.forEach(function(d)
+                    {
+                            d.countries = d.countries;
+                            d.sugars_100g = + parseInt(d.sugars_100g);
+                            d.salt_100g = + parseInt(d.salt_100g);
+                    });
+                    // scale the range of the data
+                    x.domain(myObj.map(function(d) { return d.countries; }));
+                    y.domain([0, d3.max(myObj, function(d) { return (d.sugars_100g + d.salt_100g); })]);
+                    // X-Axis
+                    svg.append("g")
+                        .attr("class", "x axis")
+                        .attr("transform", "translate(0," + height + ")")
+                        .call(xAxis)
+                        .selectAll("text")
+                        .style("text-anchor", "end")
+                        .attr("dx", "-.8em")
+                        .attr("dy", "-.55em")
+                        .attr("transform", "rotate(-30)" );
+                    // Y-Axis
+                    svg.append("g")
+                          .attr("class", "y axis")
+                          .call(yAxis)
+                          .append("text")
+                          .attr("transform", "rotate(-90)")
+                          .attr("y", 5)
+                          .attr("dy", ".71em")
+                          .style("text-anchor", "end")
+                          .text("Consuption");
+                    // Add bar chart
+                    svg.selectAll("rect")
+                        .data(myObj)
+                        .enter().append("rect")
+                        .attr("class", "rect")
+                        .attr("x", function(d) { return x(d.countries); })
+                        .attr("width", x.rangeBand())
+                        .attr("y", function(d) { return y(parseInt(d.sugars_100g)+parseInt(d.salt_100g)); })
+                        .attr("height", function(d) { return height - y(parseInt(d.sugars_100g) + parseInt(d.salt_100g)); });
+                }
+            </script>
+              </div>
+          </div>
+    </div>
+    <!-- Link for the Second Web Page -->
+    <div class="container">
+        <div class="row">
+              <center><a href="line.html" id="next"> &nbsp; Click here to show Multiline chart for fat , proteins and carbohydrate consuption &nbsp;</a></center>
+        </div>
+    </div>
+    <!-- Linking the Bootstrap js File -->
+    <script src="bootstrap.min.js"></script>
+    <script src="jquery-2.2.4.js"></script>
+  </body>

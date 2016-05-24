@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>FoodFacts</title>
+<!--styles to apply for chart -->
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<link rel="stylesheet" type="text/css" href="stylesheet1.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.js"></script>
+</head>
+<body>
+  <div>
+<h1>Multiline chart for Fat , proteins and carbohydrates consuption based on region</h1>
+<div>
+  <table id="jsonTable">
+    <thead>
+      <th>countries</th>
+      <th>sugars_100g</th>
+      <th>salt_100g</th>
+      <th>salt_100g</th>
+        <th>Click to delete</th>
+    </thead>
+  </table>
+</div>
+<div id="multiline">
+</div>
+</div>
+<script>
+var	margin = {top: 30, right: 40, bottom: 30, left: 50},
+	width = 600 - margin.left - margin.right,
+	height = 270 - margin.top - margin.bottom;
+d3.json("files/region.json", function(error, data) {
+    drawGraph(data);
+   $('#jsonTable').dataTable({
+      data:data,
+      columns: [
+        { data: "countries" },
+          { data: "carbohydrates_100g" },
+        { data: "fat_100g" },
+          { data: "proteins_100g" },
+        {'render': function (data, type, full, meta){
+             return '<a href="#">X</a>';
+         }
+       }
+      ]
+    });
+    var table = $('#jsonTable').DataTable();
+$('#jsonTable tbody a').click( function () {
+  var dt=table
+      .row( $(this).parents('tr') ).data();
+      data.splice(data.indexOf(dt),1);
+    table
+        .row( $(this).parents('tr') )
+        .remove()
+        .draw();
+        d3.select("svg").remove();
+        drawGraph(data);
+        if(data.length>0){
+        console.log(data);
+      }
+} );
+});
+<!-- Defining x and y axis domain-->
+function drawGraph(data){
+  var x = d3.scale.ordinal()
+      .rangeRoundBands([0,width], 0.2,0.2);
+  var	y = d3.scale.linear().range([height, 0]);
+   var	xAxis = d3.svg.axis().scale(x)
+   	.orient("bottom");
+  var	yAxis = d3.svg.axis().scale(y)
+  	.orient("left");
+  var	valueline = d3.svg.line()
+  	.x(function(d) { return x(d.countries); })
+  	.y(function(d) { return y(d.fat_100g); });
+  var	valueline2 = d3.svg.line()
+  	.x(function(d) { return x(d.countries); })
+  	.y(function(d) { return y(d.proteins_100g); });
+    var	valueline3 = d3.svg.line()
+    	.x(function(d) { return x(d.countries); })
+    	.y(function(d) { return y(d.carbohydrates_100g); });
+  var	svg = d3.select("#multiline")
+  	.append("svg")
+  		.attr("width", width + margin.left + margin.right)
+  		.attr("height", height + margin.top + margin.bottom)
+  	.append("g")
+  		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      data.forEach(function(d) {
+    		d.carbohydrates_100g = d.carbohydrates_100g;
+    		d.fat_100g = +d.fat_100g;
+    		d.proteins_100g = +d.proteins_100g;
+    	});
+      x.domain(data.map(function(d){
+          return d.countries;
+      }));
+    	// Scale the range of the data
+    	//x.domain(d3.extent(data, function(d) { return d.countries; }));
+    	y.domain([0, d3.max(data, function(d) { return Math.max(d.fat_100g, d.proteins_100g,d.carbohydrates_100g); })]);
+    	svg.append("path")		// Add the valueline path.
+    		.attr("class", "line")
+        .style("stroke", "red")
+    		.attr("d", valueline(data));
+    	svg.append("path")		// Add the valueline2 path.
+    		.attr("class", "line")
+    		.style("stroke", "green")
+    		.attr("d", valueline2(data));
+        svg.append("path")		// Add the valueline2 path.
+          .attr("class", "line")
+          .style("stroke", "blue")
+          .attr("d", valueline3(data));
+    	svg.append("g")			// Add the X Axis
+    		.attr("class", "x axis")
+    		.attr("transform", "translate(0," + height + ")")
+    		.call(xAxis);
+    	svg.append("g")			// Add the Y Axis
+    		.attr("class", "y axis")
+    		.call(yAxis);
+    	svg.append("text")
+    		.attr("transform", "translate(" + (width+3) + "," + y(data[1].fat_100g) + ")")
+    		.attr("dy", ".35em")
+    		.attr("text-anchor", "start")
+    		.style("fill", "red")
+    		.text("fat");
+    	svg.append("text")
+    		.attr("transform", "translate(" + (width+3) + "," + y(data[1].proteins_100g) + ")")
+    		.attr("dy", ".35em")
+    		.attr("text-anchor", "start")
+    		.style("fill", "green")
+    		.text("proteins");
+        svg.append("text")
+          .attr("transform", "translate(" + (width+3) + "," + y(data[1].carbohydrates_100g) + ")")
+          .attr("dy", ".35em")
+          .attr("text-anchor", "start")
+          .style("fill", "blue")
+          .text("carbo");
+    }
+</script>
+</body>
+</html>
